@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization; // Yetkilendirme işlemleri için gerekli kütüphane
 using Microsoft.AspNetCore.Mvc; // API controller'lar için gerekli
+using OnlineShoppingPlatform.API.Filters;
 using OnlineShoppingPlatform.BL.Helpers; // PasswordProtector sınıfını dahil eder
 using OnlineShoppingPlatform.BL.Interfaces; // Business Logic katmanı arayüzleri için
 using OnlineShoppingPlatform.DAL.Entities; // Kullanıcı sınıfını dahil eder
+
 
 namespace OnlineShoppingPlatform.API.Controllers
 {
@@ -25,32 +27,28 @@ namespace OnlineShoppingPlatform.API.Controllers
 
         [AllowAnonymous]
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] User loginUser)
+        [ServiceFilter(typeof(TimeRestrictedAccessFilter))]
+        public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
         {
-            // Email ile kullanıcıyı veritabanında bul
-            var users = await _userService.GetAllUsersAsync();
-            var user = users.FirstOrDefault(u => u.Email == loginUser.Email);
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
-            // Kullanıcı bulunamazsa veya şifre doğrulanamazsa 401 Unauthorized döner
+            // Kullanıcıyı email ile bul
+            var user = (await _userService.GetAllUsersAsync())
+                .FirstOrDefault(u => u.Email == loginDto.Email);
+
             if (user == null)
-                return Unauthorized("Geçersiz kullanıcı adı veya şifre");
+                return Unauthorized("Geçersiz kullanıcı adı veya şifre.");
 
-            try
-            {
-                // Şifreyi çöz ve doğrula
-                var decryptedPassword = _passwordProtector.Unprotect(user.Password);
-                if (decryptedPassword != loginUser.Password)
-                    return Unauthorized("Geçersiz kullanıcı adı veya şifre");
-            }
-            catch
-            {
-                return Unauthorized("Şifre çözme sırasında bir hata oluştu");
-            }
+            // Şifre doğrulama
+            if (!_passwordProtector.ValidatePassword(loginDto.Password, user.Password))
+                return Unauthorized("Geçersiz kullanıcı adı veya şifre.");
 
-            // Kullanıcı doğrulandıktan sonra token oluştur ve döndür
+            // JWT token oluştur
             var token = _tokenService.GenerateToken(user);
             return Ok(new { Token = token });
         }
+
 
         [Authorize]
         [HttpGet("secure-data")]
@@ -66,8 +64,6 @@ namespace OnlineShoppingPlatform.API.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState); // Model doğrulama hatalarını döndür
 
-            // Kullanıcının şifresini şifrele
-            user.Password = _passwordProtector.Protect(user.Password);
             await _userService.AddUserAsync(user); // Kullanıcıyı veritabanına kaydet
             return Ok("Kullanıcı başarıyla kaydedildi.");
         }

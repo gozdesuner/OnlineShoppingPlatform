@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer; // JWT kimlik doðrulama için gerekli kütüphane
 using Microsoft.EntityFrameworkCore; // Entity Framework Core ile veritabaný iþlemleri için kullanýlýr
 using Microsoft.IdentityModel.Tokens; // JWT token doðrulama ve oluþturma için kullanýlýr
+using OnlineShoppingPlatform.API.Filters;
 using OnlineShoppingPlatform.API.Middleware;
 using OnlineShoppingPlatform.BL.Helpers;
 using OnlineShoppingPlatform.BL.Interfaces; // Business Logic katmanýndaki arayüzleri kullanmak için
@@ -32,9 +33,16 @@ builder.Services.AddScoped<IUserService, UserService>(); // Business Logic katma
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>(); // Data Access katmanýndaki UnitOfWork'u baðla
 builder.Services.AddControllers(); // Controller'lar için gerekli servisi ekle
 builder.Services.AddScoped<ITokenService, TokenService>();
+
+//var keysDirectory = new DirectoryInfo(Path.Combine(builder.Environment.ContentRootPath, "App_Data", "Keys"));
 builder.Services.AddDataProtection();
-builder.Services.AddSingleton<PasswordProtector>();
+//   .PersistKeysToFileSystem(keysDirectory)
+// .SetApplicationName("OnlineShoppingPlatform");
+builder.Services.AddScoped<PasswordProtector>();
 builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<TimeRestrictedAccessFilter>();
+builder.Services.AddMemoryCache();
+builder.Services.AddSingleton<MaintenanceState>();
 
 
 

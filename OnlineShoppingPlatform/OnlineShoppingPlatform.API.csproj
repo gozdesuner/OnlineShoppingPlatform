@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -24,6 +24,10 @@
   <ItemGroup>
     <ProjectReference Include="..\OnlineShoppingPlatform.BL\OnlineShoppingPlatform.BL.csproj" />
     <ProjectReference Include="..\OnlineShoppingPlatform.DAL\OnlineShoppingPlatform.DAL.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="App_Data\" />
   </ItemGroup>
 
 </Project>

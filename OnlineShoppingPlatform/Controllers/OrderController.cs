@@ -12,9 +12,9 @@ namespace OnlineShoppingPlatform.API.Controllers
     {
         private readonly IOrderService _orderService; // OrderService üzerinden işlemleri yapacağız.
 
-        public OrderController(IOrderService orderService) // Dependency Injection
+        public OrderController(IOrderService orderService) // Dependency Injection(Constructor, Dependency Injection ile IOrderService bağımlılığını alıyor)
         {
-            _orderService = orderService;
+            _orderService = orderService;// Dependency Injection ile gelen servisi ata
         }
 
         // Tüm siparişleri getir
@@ -49,7 +49,7 @@ namespace OnlineShoppingPlatform.API.Controllers
 
         // Sipariş güncelle
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateOrder(int id, [FromBody] Order order)
+        public async Task<IActionResult> UpdateOrder(int id, [FromBody] Order order)// İstek gövdesinden güncel sipariş bilgisi alınır
         {
             if (id != order.Id)
                 return BadRequest("ID uyuşmazlığı."); // 400 Bad Request
