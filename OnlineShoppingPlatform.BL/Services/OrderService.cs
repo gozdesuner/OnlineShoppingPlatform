@@ -36,17 +36,73 @@ namespace OnlineShoppingPlatform.BL.Services
         // Mevcut siparişi güncelle
         public async Task<bool> UpdateOrderAsync(Order order)
         {
-            // Güncellenmek istenen siparişi veritabanında ara
-            var existingOrder = await _unitOfWork.Orders.GetByIdAsync(order.Id);
-            if (existingOrder == null) // Sipariş bulunamazsa false döndür
-                return false;
+            try
+            {
+                // Güncellenecek siparişi veritabanında ara
+                var existingOrder = await _unitOfWork.Orders.GetByIdAsync(order.Id);
+                if (existingOrder == null)
+                    return false;
 
-            // Sipariş bilgilerini güncelle
-            existingOrder.OrderDate = order.OrderDate;
-            existingOrder.TotalAmount = order.TotalAmount;
-            _unitOfWork.Orders.Update(existingOrder); // Güncellemeyi UnitOfWork üzerinden yap
-            await _unitOfWork.CompleteAsync(); // Değişiklikleri kaydet
-            return true; // Başarılı bir şekilde güncellendi
+                try
+                {
+                    // Sipariş bilgilerini güncelle
+                    existingOrder.OrderDate = order.OrderDate;
+                    existingOrder.TotalAmount = order.TotalAmount;
+                    existingOrder.CustomerId = order.CustomerId;
+                    _unitOfWork.Orders.Update(existingOrder);
+
+                    // Önce tüm mevcut OrderProducts kayıtlarını sil
+                    var existingOrderProducts = await _unitOfWork.OrderProducts.GetAllAsync();
+                    var productsToDelete = existingOrderProducts.Where(op => op.OrderId == order.Id).ToList();
+                    
+                    if (productsToDelete.Any())
+                    {
+                        foreach (var item in productsToDelete)
+                        {
+                            _unitOfWork.OrderProducts.Remove(item);
+                        }
+                    }
+
+                    // Değişiklikleri kaydet
+                    await _unitOfWork.CompleteAsync();
+
+                    // Yeni OrderProducts ekle
+                    if (order.OrderProducts != null && order.OrderProducts.Any())
+                    {
+                        var distinctProducts = order.OrderProducts
+                            .GroupBy(op => op.ProductId)
+                            .Select(g => new OrderProduct
+                            {
+                                OrderId = existingOrder.Id,
+                                ProductId = g.Key,
+                                Quantity = g.Sum(x => x.Quantity)
+                            })
+                            .ToList();
+
+                        foreach (var orderProduct in distinctProducts)
+                        {
+                            await _unitOfWork.OrderProducts.AddAsync(orderProduct);
+                        }
+
+                        // Son değişiklikleri kaydet
+                        await _unitOfWork.CompleteAsync();
+                    }
+
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Update Error: {ex.Message}");
+                    Console.WriteLine($"Stack Trace: {ex.StackTrace}");
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"General Error: {ex.Message}");
+                Console.WriteLine($"Stack Trace: {ex.StackTrace}");
+                return false;
+            }
         }
 
         // Siparişi sil

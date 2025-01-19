@@ -90,11 +90,13 @@ namespace OnlineShoppingPlatform.DAL.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            // OrderProducts tablosunda ProductId sütununa indeks tanımlanıyor
             migrationBuilder.CreateIndex(
                 name: "IX_OrderProducts_ProductId",
                 table: "OrderProducts",
                 column: "ProductId");
 
+            // Orders tablosunda CustomerId sütununa indeks tanımlanıyor
             migrationBuilder.CreateIndex(
                 name: "IX_Orders_CustomerId",
                 table: "Orders",

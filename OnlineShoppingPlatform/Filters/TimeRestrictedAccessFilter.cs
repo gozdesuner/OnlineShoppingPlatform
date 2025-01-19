@@ -9,7 +9,7 @@ namespace OnlineShoppingPlatform.API.Filters
         {
             var currentHour = DateTime.Now.Hour;
 
-            // Örneğin, yalnızca 9:00 - 18:00 arası erişime izin ver
+            // Örneğin, yalnızca 9:00 - 17:00 arası erişime izin ver
             if (currentHour < 1 || currentHour > 23)
             {
                 context.Result = new ContentResult
@@ -18,6 +18,7 @@ namespace OnlineShoppingPlatform.API.Filters
                     Content = "Bu endpoint yalnızca çalışma saatleri içinde kullanılabilir."
                 };
             }
+
         }
         public void OnActionExecuted(ActionExecutedContext context)
         {

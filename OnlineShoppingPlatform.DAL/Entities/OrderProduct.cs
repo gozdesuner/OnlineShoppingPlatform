@@ -1,18 +1,26 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace OnlineShoppingPlatform.DAL.Entities
 {
     public class OrderProduct
     {
-        public int OrderId { get; set; }// Sipariş kimlik numarası (foreign key).
+        [Key]
+        [Column(Order = 1)]
+        public int OrderId { get; set; }
 
+        [Key]
+        [Column(Order = 2)]
+        public int ProductId { get; set; }
 
-        public Order? Order { get; set; } // Sipariş ile ilişki (navigation property).
+        public Order? Order { get; set; }
 
-        public int ProductId { get; set; }// Ürün kimlik numarası (foreign key).
+        [JsonIgnore]
+        public Product? Product { get; set; }
 
-        [JsonIgnore]//Jsonda order alanı gözükmesin istedim.
-        public Product? Product { get; set; }// Ürün ile ilişki (navigation property).
-        public int Quantity { get; set; }// Sipariş edilen ürün miktarı.
+        [Required]
+        [Range(1, int.MaxValue, ErrorMessage = "Miktar 1'den büyük olmalıdır.")]
+        public int Quantity { get; set; }
     }
 }

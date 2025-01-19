@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace OnlineShoppingPlatform.DAL.Entities
 {
@@ -9,12 +10,16 @@ namespace OnlineShoppingPlatform.DAL.Entities
         [Required]
         public DateTime OrderDate { get; set; }// Sipariş tarihi.
 
-        [Range(0, double.MaxValue, ErrorMessage = "Toplam tutar negatif olamaz.")]
+        [Range(0, double.MaxValue)]
         public decimal TotalAmount { get; set; }// Siparişin toplam tutarı.
 
         [Required]
         public int CustomerId { get; set; }// Siparişin sahibi olan müşteri kimlik numarası (foreign key).
+
+        [JsonIgnore]
         public User? Customer { get; set; }// Siparişin sahibi müşteri (navigation property).
+
+        [JsonIgnore]
         public ICollection<OrderProduct>? OrderProducts { get; set; }
     }
 }

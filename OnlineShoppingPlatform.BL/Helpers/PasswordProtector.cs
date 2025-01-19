@@ -1,38 +1,38 @@
-﻿using Microsoft.AspNetCore.DataProtection;
+﻿using Microsoft.AspNetCore.DataProtection; // Data Protection için gerekli namespace
 
-namespace OnlineShoppingPlatform.BL.Helpers
+namespace OnlineShoppingPlatform.BL.Helpers // OnlineShoppingPlatform için yardımcı sınıflar
 {
-    public class PasswordProtector
+    public class PasswordProtector // Şifreleme ve çözme işlemleri için bir sınıf
     {
-        private readonly IDataProtector _dataProtector;
+        private readonly IDataProtector _dataProtector; // Şifreleme ve çözme işlemlerini gerçekleştiren koruyucu
 
-        public PasswordProtector(IDataProtectionProvider dataProtectionProvider)
+        public PasswordProtector(IDataProtectionProvider dataProtectionProvider) // Constructor: IDataProtectionProvider ile koruyucu oluşturur
         {
-            _dataProtector = dataProtectionProvider.CreateProtector("OnlineShoppingPlatform");
+            _dataProtector = dataProtectionProvider.CreateProtector("OnlineShoppingPlatform"); // "OnlineShoppingPlatform" amacı ile bir koruyucu oluşturur
         }
 
-        public string Protect(string plainPassword)
+        public string Protect(string plainPassword) // Şifreleme işlemi için metod
         {
-            string korunmus = _dataProtector.Protect(plainPassword);
-            string normal = _dataProtector.Unprotect(korunmus);
-            return _dataProtector.Protect(plainPassword); // Şifreleme
+            string korunmus = _dataProtector.Protect(plainPassword); // Şifrelenmiş (korunmuş) veriyi üretir
+            string normal = _dataProtector.Unprotect(korunmus); // Korunan şifreyi çözerek eski haline getirir (test için)
+            return _dataProtector.Protect(plainPassword); // Şifreleme işlemini tekrar döndürür
         }
 
-        public string Unprotect(string encryptedPassword)
+        public string Unprotect(string encryptedPassword) // Şifre çözme işlemi için metod
         {
-            return _dataProtector.Unprotect(encryptedPassword); // Şifre çözme
+            return _dataProtector.Unprotect(encryptedPassword); // Şifrelenmiş (korunmuş) veriyi çözerek düz metin haline getirir
         }
 
-        public bool ValidatePassword(string inputPassword, string encryptedPassword)
+        public bool ValidatePassword(string inputPassword, string encryptedPassword) // Şifre doğrulama işlemi
         {
             try
             {
-                var decryptedPassword = Unprotect(encryptedPassword); // Şifre çözme
-                return decryptedPassword == inputPassword; // Şifre eşleşiyor mu?
+                var decryptedPassword = Unprotect(encryptedPassword); // Şifrelenmiş şifreyi çözer
+                return decryptedPassword == inputPassword; // Çözülen şifre ile kullanıcıdan gelen şifre eşleşiyor mu kontrol eder
             }
             catch
             {
-                return false; // Şifre çözme başarısız olursa
+                return false; // Şifre çözme sırasında hata olursa (örneğin geçersiz bir şifre çözmeye çalışılırsa) false döner
             }
         }
     }
